@@ -54,7 +54,7 @@ cp .env.example .env
 Edit `.env` file with your configurations (default values work for development).
 
 3. Add Excel files:
-Place `customer_data.xlsx` and `loan_data.xlsx` in the parent folder (same level as `credit-approval-system/`).
+Place `customer_data.xlsx` and `loan_data.xlsx` in the `data/` directory.
 
 4. Build and start services:
 ```bash

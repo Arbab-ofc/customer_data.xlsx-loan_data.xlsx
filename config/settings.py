@@ -109,4 +109,4 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 
-DATA_DIR = Path(config('DATA_DIR', default=str(BASE_DIR.parent)))
+DATA_DIR = Path(config('DATA_DIR', default=str(BASE_DIR / 'data')))
