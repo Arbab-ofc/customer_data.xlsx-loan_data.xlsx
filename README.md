@@ -92,7 +92,7 @@ DATA_DIR=./data
 - Docker (optional)
 - Git
 
-### Local Development (No Docker)
+### Run Locally (No Docker)
 
 1. Create and activate a virtual environment:
 ```bash
@@ -105,17 +105,23 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Run migrations:
+3. Ensure `.env` is configured for local services:
+```bash
+cp .env.example .env
+```
+Update `.env` to use `DB_HOST=localhost`, `REDIS_HOST=localhost`, and `DATA_DIR=./data` if you are not using Docker.
+
+4. Run migrations:
 ```bash
 python manage.py migrate
 ```
 
-4. Start the dev server:
+5. Start the dev server:
 ```bash
 python manage.py runserver
 ```
 
-5. Trigger data ingestion (optional):
+6. Trigger data ingestion (optional):
 ```bash
 python manage.py shell
 ```
@@ -128,7 +134,7 @@ exit()
 
 The application will be available at `http://localhost:8000`.
 
-### Docker (Optional)
+### Run with Docker
 
 ```bash
 docker-compose up --build
