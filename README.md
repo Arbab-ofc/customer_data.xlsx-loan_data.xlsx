@@ -130,6 +130,16 @@ docker-compose exec web python manage.py migrate
 
 ## API Endpoints
 
+### Health Check
+GET `/health`
+
+Response:
+```json
+{
+  "status": "ok"
+}
+```
+
 ### 1. Register Customer
 POST `/register`
 
