@@ -1,25 +1,30 @@
 # Credit Approval System
 
-A production-ready Django REST API backend for credit approval and loan management system.
+![Django](https://img.shields.io/badge/Django-4.2.9-092E20?logo=django&logoColor=white)
+![DRF](https://img.shields.io/badge/DRF-3.14.0-ff1709?logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)
+![Celery](https://img.shields.io/badge/Celery-5.3.4-37814A?logo=celery&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-5.0.1-DC382D?logo=redis&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)
+
+A production-ready Django REST API for credit approval and loan management. The service calculates credit limits and credit scores, checks eligibility with dynamic interest rate correction, and creates loans with EMI calculations. Excel-based ingestion is supported for bulk data bootstrapping.
 
 ## Features
 
-- Customer registration with automatic credit limit calculation
-- Credit score calculation based on historical loan data
-- Loan eligibility checking with dynamic interest rate adjustment
-- Loan creation with EMI calculation using compound interest
-- Background workers for Excel data ingestion
-- PostgreSQL database with proper indexing
-- Dockerized deployment with docker-compose
+- Customer registration with automatic approved limit calculation
+- Credit score computation based on payment history and loan portfolio
+- Eligibility checks with interest rate correction and EMI affordability guardrails
+- Loan creation with EMI computed via compound interest
+- Background ingestion from Excel using Celery
+- PostgreSQL-backed persistence with Docker support
 
 ## Tech Stack
 
-- Django 4.2.9
-- Django REST Framework
-- PostgreSQL 15
-- Celery + Redis (Background Tasks)
-- Docker & Docker Compose
-- openpyxl (Excel file processing)
+- Django + Django REST Framework
+- PostgreSQL
+- Celery + Redis
+- openpyxl
+- Docker + Docker Compose
 
 ## Project Structure
 
@@ -32,14 +37,30 @@ credit-approval-system/
 ├── data/               # Excel files for data ingestion
 └── docker-compose.yml  # Docker orchestration
 
+## Data Files (Required)
+
+The application expects Excel files in `data/`.
+
+Option A: clone the data repo into `data/`:
+```bash
+git clone https://github.com/Arbab-ofc/customer_data.xlsx-loan_data.xlsx data
+```
+
+Option B: download the files and place them in `data/`:
+- `customer_data.xlsx`
+- `loan_data.xlsx`
+
 ## Setup Instructions
 
 ### Prerequisites
 
-- Docker & Docker Compose installed
+- Python 3.11+
+- PostgreSQL 15+
+- Redis 6+
+- Docker (optional)
 - Git
 
-### Installation
+### Local Development (No Docker)
 
 1. Clone the repository:
 ```bash
@@ -47,33 +68,39 @@ git clone <repository-url>
 cd credit-approval-system
 ```
 
-2. Create environment file:
+2. Create and activate a virtual environment:
 ```bash
-cp .env.example .env
-```
-Edit `.env` file with your configurations (default values work for development).
-
-3. Add Excel files:
-Place `customer_data.xlsx` and `loan_data.xlsx` in the `data/` directory.
-
-4. Build and start services:
-```bash
-docker-compose up --build
+python -m venv .venv
+source .venv/bin/activate
 ```
 
-5. Run migrations (in a new terminal):
+3. Install dependencies:
 ```bash
-docker-compose exec web python manage.py migrate
+pip install -r requirements.txt
 ```
 
-6. Create superuser (optional):
+4. Configure environment variables (example):
 ```bash
-docker-compose exec web python manage.py createsuperuser
+export DB_NAME=credit_approval_db
+export DB_USER=<your_db_user>
+export DB_PASSWORD=<your_db_password>
+export DB_HOST=localhost
+export DB_PORT=5432
 ```
 
-7. Trigger data ingestion:
+5. Run migrations:
 ```bash
-docker-compose exec web python manage.py shell
+python manage.py migrate
+```
+
+6. Start the dev server:
+```bash
+python manage.py runserver
+```
+
+7. Trigger data ingestion (optional):
+```bash
+python manage.py shell
 ```
 In the shell:
 ```python
@@ -83,6 +110,16 @@ exit()
 ```
 
 The application will be available at `http://localhost:8000`.
+
+### Docker (Optional)
+
+```bash
+docker-compose up --build
+```
+In another terminal:
+```bash
+docker-compose exec web python manage.py migrate
+```
 
 ## API Endpoints
 
@@ -247,6 +284,122 @@ View Customer Loans:
 curl http://localhost:8000/view-loans/1
 ```
 
+## Local Endpoint Test Results (No Docker)
+
+Tested locally against a running dev server using a fresh Postgres database.
+
+### 1. Register Customer
+Endpoint: `POST /register`
+
+Request:
+```json
+{
+  "first_name": "John",
+  "last_name": "Doe",
+  "age": 30,
+  "monthly_income": 50000,
+  "phone_number": 9876543210
+}
+```
+
+Result:
+```json
+{
+  "customer_id": 1,
+  "name": "John Doe",
+  "age": 30,
+  "monthly_income": "50000.00",
+  "approved_limit": "1800000.00",
+  "phone_number": 9876543210
+}
+```
+
+### 2. Check Eligibility
+Endpoint: `POST /check-eligibility`
+
+Request:
+```json
+{
+  "customer_id": 1,
+  "loan_amount": 200000,
+  "interest_rate": 10.5,
+  "tenure": 24
+}
+```
+
+Result:
+```json
+{
+  "customer_id": 1,
+  "approval": true,
+  "interest_rate": 10.5,
+  "corrected_interest_rate": 12.0,
+  "tenure": 24,
+  "monthly_installment": 9414.69
+}
+```
+
+### 3. Create Loan
+Endpoint: `POST /create-loan`
+
+Request:
+```json
+{
+  "customer_id": 1,
+  "loan_amount": 200000,
+  "interest_rate": 10.5,
+  "tenure": 24
+}
+```
+
+Result:
+```json
+{
+  "loan_id": 1,
+  "customer_id": 1,
+  "loan_approved": true,
+  "message": "Loan approved successfully",
+  "monthly_installment": 9414.69
+}
+```
+
+### 4. View Loan Details
+Endpoint: `GET /view-loan/1`
+
+Result:
+```json
+{
+  "loan_id": 1,
+  "customer": {
+    "id": 1,
+    "first_name": "John",
+    "last_name": "Doe",
+    "phone_number": 9876543210,
+    "age": 30
+  },
+  "loan_amount": "200000.00",
+  "interest_rate": "12.00",
+  "monthly_installment": "9414.69",
+  "tenure": 24
+}
+```
+
+### 5. View Customer Loans
+Endpoint: `GET /view-loans/1`
+
+Result:
+```json
+[
+  {
+    "loan_id": 1,
+    "loan_amount": "200000.00",
+    "interest_rate": "12.00",
+    "monthly_installment": "9414.69",
+    "repayments_left": 24
+  }
+]
+```
+
 ## Business Logic
 
 ### Credit Limit Calculation
@@ -343,10 +496,7 @@ customer_data.xlsx columns:
 loan_data.xlsx columns:
 `customer_id, loan_id, loan_amount, tenure, interest_rate, monthly_repayment, EMIs paid on time, start_date, end_date`
 
-## License
+## Contact
 
-MIT License
-
-## Support
-
-For issues and questions, please open an issue in the repository.
+- GitHub: https://github.com/Arbab-ofc
+- Issues: Please open an issue in this repository.
