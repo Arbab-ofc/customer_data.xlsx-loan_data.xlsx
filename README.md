@@ -41,6 +41,13 @@ credit-approval-system/
 
 The application expects Excel files in `data/`.
 
+## Clone Repository
+
+```bash
+git clone <repository-url>
+cd credit-approval-system
+```
+
 Option A: clone the data repo into `data/`:
 ```bash
 git clone https://github.com/Arbab-ofc/customer_data.xlsx-loan_data.xlsx data
@@ -498,5 +505,9 @@ loan_data.xlsx columns:
 
 ## Contact
 
+![GitHub](https://img.shields.io/badge/GitHub-Arbab--ofc-181717?logo=github&logoColor=white)
+![Email](https://img.shields.io/badge/Email-arbabprvt%40gmail.com-D14836?logo=gmail&logoColor=white)
+
 - GitHub: https://github.com/Arbab-ofc
+- Email: mailto:arbabprvt@gmail.com
 - Issues: Please open an issue in this repository.
