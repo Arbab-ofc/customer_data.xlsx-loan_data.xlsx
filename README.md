@@ -37,16 +37,16 @@ credit-approval-system/
 ├── data/               # Excel files for data ingestion
 └── docker-compose.yml  # Docker orchestration
 
-## Data Files (Required)
-
-The application expects Excel files in `data/`.
-
 ## Clone Repository
 
 ```bash
 git clone <repository-url>
 cd credit-approval-system
 ```
+
+## Data Files (Required)
+
+The application expects Excel files in `data/`.
 
 Option A: clone the data repo into `data/`:
 ```bash
@@ -56,6 +56,31 @@ git clone https://github.com/Arbab-ofc/customer_data.xlsx-loan_data.xlsx data
 Option B: download the files and place them in `data/`:
 - `customer_data.xlsx`
 - `loan_data.xlsx`
+
+## Configuration
+
+Copy the example env file:
+```bash
+cp .env.example .env
+```
+
+`.env.example` defaults are Docker-friendly:
+```
+DB_HOST=db
+REDIS_HOST=redis
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+DATA_DIR=/app/data
+```
+
+For local development (no Docker), update `.env` to:
+```
+DB_HOST=localhost
+REDIS_HOST=localhost
+CELERY_BROKER_URL=redis://localhost:6379/0
+CELERY_RESULT_BACKEND=redis://localhost:6379/0
+DATA_DIR=./data
+```
 
 ## Setup Instructions
 
@@ -69,43 +94,28 @@ Option B: download the files and place them in `data/`:
 
 ### Local Development (No Docker)
 
-1. Clone the repository:
-```bash
-git clone <repository-url>
-cd credit-approval-system
-```
-
-2. Create and activate a virtual environment:
+1. Create and activate a virtual environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
-3. Install dependencies:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Configure environment variables (example):
-```bash
-export DB_NAME=credit_approval_db
-export DB_USER=<your_db_user>
-export DB_PASSWORD=<your_db_password>
-export DB_HOST=localhost
-export DB_PORT=5432
-```
-
-5. Run migrations:
+3. Run migrations:
 ```bash
 python manage.py migrate
 ```
 
-6. Start the dev server:
+4. Start the dev server:
 ```bash
 python manage.py runserver
 ```
 
-7. Trigger data ingestion (optional):
+5. Trigger data ingestion (optional):
 ```bash
 python manage.py shell
 ```
